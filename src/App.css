@@ -76,7 +76,8 @@ body {
   font-weight: 600;
   border: 2px solid;
   background: #ffffff;
-  transition: all 0.3s ease;
+  /* Removed transition to prevent blinking during data updates */
+  /* transition: all 0.3s ease; */
 }
 
 .power-on {
@@ -99,14 +100,17 @@ body {
   color: #9E9E9E;
 }
 
+/* Disabled status-dot pulse animation to prevent blinking */
 .status-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: currentColor;
-  animation: pulse 2s infinite;
+  /* animation: pulse 2s infinite; */
 }
 
+/* Disabled pulse animation */
+/*
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -115,6 +119,7 @@ body {
     opacity: 0.4;
   }
 }
+*/
 
 /* Container */
 .container {
@@ -167,12 +172,14 @@ body {
   display: flex;
   align-items: center;
   gap: 20px;
-  transition: all 0.3s ease;
+  /* Removed transition to prevent blinking during data updates */
+  /* transition: all 0.3s ease; */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .metric-card:hover {
-  transform: translateY(-5px);
+  /* Removed transform to prevent card re-rendering during hover */
+  /* transform: translateY(-5px); */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
@@ -223,12 +230,14 @@ body {
   border: 3px solid;
   border-radius: 12px;
   padding: 20px;
-  transition: all 0.3s ease;
+  /* Removed transition to prevent blinking during data updates */
+  /* transition: all 0.3s ease; */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .battery-cell:hover {
-  transform: translateY(-5px);
+  /* Removed transform to prevent cell re-rendering during hover */
+  /* transform: translateY(-5px); */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
@@ -262,10 +271,13 @@ body {
 .cell-fill {
   height: 100%;
   border-radius: 12px;
-  transition: width 0.5s ease;
+  /* Removed transition to prevent blinking during data updates */
+  /* transition: width 0.5s ease; */
   position: relative;
 }
 
+/* Disabled shine animation to prevent blinking effects */
+/*
 .cell-fill::after {
   content: '';
   position: absolute;
@@ -285,6 +297,7 @@ body {
     transform: translateX(100%);
   }
 }
+*/
 
 .cell-range {
   display: flex;
@@ -299,12 +312,16 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 20px;
+  /* Prevent layout shifts during updates */
+  grid-auto-rows: minmax(250px, auto);
 }
 
 .charts-grid-small {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 20px;
+  /* Prevent layout shifts during updates */
+  grid-auto-rows: minmax(250px, auto);
 }
 
 /* Chart Card */
@@ -313,12 +330,16 @@ body {
   border: 3px solid;
   border-radius: 12px;
   padding: 20px;
-  transition: all 0.3s ease;
+  /* Removed transition to prevent blinking during data updates */
+  /* transition: all 0.3s ease; */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  min-height: 250px; /* Ensure consistent height */
+  position: relative; /* Prevent layout shifts */
 }
 
 .chart-card:hover {
-  transform: translateY(-5px);
+  /* Removed transform to prevent chart re-rendering during hover */
+  /* transform: translateY(-5px); */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
@@ -336,6 +357,9 @@ body {
   font-size: 0.9rem;
   font-weight: 600;
   text-align: right;
+  position: absolute; /* Prevent layout shifts during updates */
+  bottom: 20px;
+  right: 20px;
 }
 
 /* Responsive Design */
@@ -431,7 +455,7 @@ body {
 }
 
 /* Animations */
-@keyframes fadeIn {
+/* @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -440,22 +464,11 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
-}
+} */
 
-.metric-card,
+/* Removed fadeIn animation from cards to prevent blinking during data updates */
+/* .metric-card,
 .battery-cell,
 .chart-card {
   animation: fadeIn 0.5s ease-out forwards;
-}
-
-.metric-card:nth-child(1) { animation-delay: 0.1s; }
-.metric-card:nth-child(2) { animation-delay: 0.15s; }
-.metric-card:nth-child(3) { animation-delay: 0.2s; }
-.metric-card:nth-child(4) { animation-delay: 0.25s; }
-
-.battery-cell:nth-child(1) { animation-delay: 0.3s; }
-.battery-cell:nth-child(2) { animation-delay: 0.35s; }
-.battery-cell:nth-child(3) { animation-delay: 0.4s; }
-.battery-cell:nth-child(4) { animation-delay: 0.45s; }
-.battery-cell:nth-child(5) { animation-delay: 0.5s; }
-.battery-cell:nth-child(6) { animation-delay: 0.55s; }
+} */

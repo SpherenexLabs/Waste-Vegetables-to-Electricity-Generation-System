@@ -1,283 +1,7 @@
-// import React, { useState, useEffect } from 'react';
-// import { initializeApp } from 'firebase/app';
-// import { getDatabase, ref, onValue } from 'firebase/database';
-// import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
-// import './App.css';
-
-// // Reusable components hoisted to top-level to avoid remounting on each render
-// const PowerCard = React.memo(({ title, value, unit, icon, color, description }) => (
-//   <div className={`power-card ${color}`}>
-//     <div className="power-card-header">
-//       <div className="power-icon">{icon}</div>
-//       <div className="power-card-info">
-//         <h3>{title}</h3>
-//         <p className="power-description">{description}</p>
-//       </div>
-//     </div>
-//     <div className="power-card-body">
-//       <div className="power-value">
-//         {value}
-//         <span className="power-unit">{unit}</span>
-//       </div>
-//     </div>
-//     <div className="power-card-wave"></div>
-//   </div>
-// ));
-
-// const MetricChart = React.memo(({ data, title, color, dataKey = 'value', unit = '' }) => {
-//   const gradId = `grad-${String(color).replace('#', '')}`; // avoid '#'' in id for url(#...)
-//   const latest = data && data.length > 0 ? data[data.length - 1].value : 0;
-//   return (
-//     <div className="metric-chart">
-//       <div className="chart-header">
-//         <h3>{title}</h3>
-//         <span className="chart-current-value">
-//           {Number(latest).toFixed(4)} {unit}
-//         </span>
-//       </div>
-//       <ResponsiveContainer width="100%" height={180}>
-//         <AreaChart data={data}>
-//           <defs>
-//             <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-//               <stop offset="5%" stopColor={color} stopOpacity={0.9} />
-//               <stop offset="95%" stopColor={color} stopOpacity={0.1} />
-//             </linearGradient>
-//           </defs>
-//           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-//           <XAxis
-//             dataKey="time"
-//             stroke="rgba(255,255,255,0.5)"
-//             fontSize={9}
-//             tick={{ fill: 'rgba(255,255,255,0.6)' }}
-//           />
-//           <YAxis
-//             stroke="rgba(255,255,255,0.5)"
-//             fontSize={9}
-//             tick={{ fill: 'rgba(255,255,255,0.6)' }}
-//             width={45}
-//           />
-//           <Tooltip
-//             contentStyle={{
-//               backgroundColor: 'rgba(0,0,0,0.9)',
-//               border: `1px solid ${color}`,
-//               borderRadius: '8px',
-//               color: '#fff',
-//               fontSize: '12px',
-//             }}
-//             labelStyle={{ color: color }}
-//           />
-//           <Area
-//             type="monotone"
-//             dataKey={dataKey}
-//             stroke={color}
-//             fill={`url(#${gradId})`}
-//             strokeWidth={2}
-//             isAnimationActive={false} // disable Recharts animation to prevent flicker
-//           />
-//         </AreaChart>
-//       </ResponsiveContainer>
-//     </div>
-//   );
-// });
-
-// // Firebase configuration
-// const firebaseConfig = {
-//   apiKey: "AIzaSyAXHnvNZkb00PXbG5JidbD4PbRgf7l6Lgg",
-//   authDomain: "self-balancing-7a9fe.firebaseapp.com",
-//   databaseURL: "https://self-balancing-7a9fe-default-rtdb.firebaseio.com",
-//   projectId: "self-balancing-7a9fe",
-//   storageBucket: "self-balancing-7a9fe.firebasestorage.app",
-//   messagingSenderId: "536888356116",
-//   appId: "1:536888356116:web:983424cdcaf8efdd4e2601"
-// };
-
-// // Initialize Firebase
-// const app = initializeApp(firebaseConfig);
-// const database = getDatabase(app);
-
-// const App = () => {
-//   const [data, setData] = useState({
-//     I: 0,
-//     P: 0,
-//     PF: 0,
-//     S: 0,
-//     V: 0,
-//     ts: 0
-//   });
-
-//   const [historyData, setHistoryData] = useState({
-//     current: [],
-//     power: [],
-//     powerFactor: [],
-//     apparentPower: [],
-//     voltage: []
-//   });
-
-//   const [powerQuality, setPowerQuality] = useState('Good');
-
-//   useEffect(() => {
-//     const dataRef = ref(database, '25_Power_Factor');
-    
-//     const unsubscribe = onValue(dataRef, (snapshot) => {
-//       const val = snapshot.val();
-//       if (val) {
-//         setData(val);
-        
-//         // Determine power quality based on power factor
-//         const pf = val.PF || 0;
-//         if (pf >= 0.95) setPowerQuality('Excellent');
-//         else if (pf >= 0.85) setPowerQuality('Good');
-//         else if (pf >= 0.7) setPowerQuality('Fair');
-//         else setPowerQuality('Poor');
-        
-//         // Update history for graphs (keep last 15 readings)
-//         const timestamp = new Date().toLocaleTimeString();
-//         setHistoryData(prev => ({
-//           current: [...prev.current.slice(-14), { time: timestamp, value: val.I || 0 }],
-//           power: [...prev.power.slice(-14), { time: timestamp, value: val.P || 0 }],
-//           powerFactor: [...prev.powerFactor.slice(-14), { time: timestamp, value: val.PF || 0 }],
-//           apparentPower: [...prev.apparentPower.slice(-14), { time: timestamp, value: val.S || 0 }],
-//           voltage: [...prev.voltage.slice(-14), { time: timestamp, value: val.V || 0 }]
-//         }));
-//       }
-//     });
-
-//     return () => unsubscribe();
-//   }, []);
-
-//   const getQualityColor = () => {
-//     switch(powerQuality) {
-//       case 'Excellent': return '#00ff88';
-//       case 'Good': return '#4ecdc4';
-//       case 'Fair': return '#ffd93d';
-//       case 'Poor': return '#ff6b6b';
-//       default: return '#fff';
-//     }
-//   };
-
-//   return (
-//     <div className="app">
-//       <header className="header">
-//         <div className="header-content">
-//           <div className="header-title">
-//             <h1>⚡ Power Factor Monitoring System</h1>
-//             <p className="header-subtitle">Real-time Electrical Power Analysis</p>
-//           </div>
-//           <div className="header-status">
-//             <div className="status-indicator">
-//               <span className="live-pulse"></span>
-//               <span>Live Monitoring</span>
-//             </div>
-//             <div className="quality-badge" style={{ borderColor: getQualityColor(), color: getQualityColor() }}>
-//               Power Quality: {powerQuality}
-//             </div>
-//           </div>
-//         </div>
-//       </header>
-
-//       <div className="container">
-//         {/* Main Metrics Grid */}
-//         <section className="metrics-grid">
-//           <PowerCard
-//             title="Current"
-//             value={data.I.toFixed(5)}
-//             unit="A"
-//             icon="⚡"
-//             color="current-card"
-//             description="Instantaneous Current"
-//           />
-//           <PowerCard
-//             title="Voltage"
-//             value={data.V.toFixed(5)}
-//             unit="V"
-//             icon="🔌"
-//             color="voltage-card"
-//             description="Line Voltage"
-//           />
-//           <PowerCard
-//             title="Active Power"
-//             value={data.P.toFixed(5)}
-//             unit="W"
-//             icon="💡"
-//             color="power-card"
-//             description="Real Power Consumption"
-//           />
-//           <PowerCard
-//             title="Apparent Power"
-//             value={data.S.toFixed(4)}
-//             unit="VA"
-//             icon="⚙️"
-//             color="apparent-card"
-//             description="Total Power"
-//           />
-//           <PowerCard
-//             title="Power Factor"
-//             value={data.PF.toFixed(5)}
-//             unit=""
-//             icon="📊"
-//             color="pf-card"
-//             description="Efficiency Indicator"
-//           />
-//           <PowerCard
-//             title="Timestamp"
-//             value={data.ts}
-//             unit=""
-//             icon="🕐"
-//             color="time-card"
-//             description="Data Sample Time"
-//           />
-//         </section>
-
-       
-
-//         {/* Real-time Charts */}
-//         <section className="charts-section">
-//           <h2 className="section-title">
-//             <span className="title-icon">📊</span>
-//             Real-time Waveform Analysis
-//           </h2>
-//           <div className="charts-grid">
-//             <MetricChart 
-//               data={historyData.current} 
-//               title="Current (I)" 
-//               color="#ffeb3b"
-//               unit="A"
-//             />
-//             <MetricChart 
-//               data={historyData.voltage} 
-//               title="Voltage (V)" 
-//               color="#2196f3"
-//               unit="V"
-//             />
-//             <MetricChart 
-//               data={historyData.power} 
-//               title="Active Power (P)" 
-//               color="#4caf50"
-//               unit="W"
-//             />
-//             <MetricChart 
-//               data={historyData.apparentPower} 
-//               title="Apparent Power (S)" 
-//               color="#ff9800"
-//               unit="VA"
-//             />
-//             <MetricChart 
-//               data={historyData.powerFactor} 
-//               title="Power Factor (PF)" 
-//               color="#e91e63"
-//             />
-//           </div>
-//         </section>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default App;
 
 
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue } from 'firebase/database';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
@@ -301,17 +25,17 @@ const database = getDatabase(app);
 
 const App = () => {
   const [data, setData] = useState({
-    Battery: "",
-    Current: "",
-    Motor: "",
-    Voltage: "",
+    Battery: "89",
+    Current: "1.5",
+    Motor: "OFF",
+    Voltage: "11.7",
     PowerSupply: "ON", // Power supply status
-    Cell1: "",
-    Cell2: "",
-    Cell3: "",
-    Cell4: "",
-    Cell5: "",
-    Cell6: ""
+    Cell1: "1.387",
+    Cell2: "1.417",
+    Cell3: "1.447",
+    Cell4: "1.487",
+    Cell5: "1.500",
+    Cell6: "1.500"
   });
 
   const [historyData, setHistoryData] = useState({
@@ -331,6 +55,58 @@ const App = () => {
   const [cellVoltages, setCellVoltages] = useState([0, 0, 0, 0, 0, 0]);
   // Track last current/voltage to decide when to update cells
   const lastCV = useRef({ current: 0, voltage: 0, initialized: false });
+  // Local current simulation state
+  const [simulatedCurrent, setSimulatedCurrent] = useState(1.5);
+  const [isIncreasing, setIsIncreasing] = useState(true);
+
+  // Effect to simulate current value changes when power is on
+  useEffect(() => {
+    if (!isPowerOn) return;
+
+    const interval = setInterval(() => {
+      setSimulatedCurrent(prevCurrent => {
+        const step = 0.1;
+        let newCurrent;
+        
+        if (isIncreasing) {
+          newCurrent = prevCurrent + step;
+          if (newCurrent >= 2.0) {
+            newCurrent = 2.0;
+            setIsIncreasing(false);
+          }
+        } else {
+          newCurrent = prevCurrent - step;
+          if (newCurrent <= 1.5) {
+            newCurrent = 1.5;
+            setIsIncreasing(true);
+          }
+        }
+        
+        return parseFloat(newCurrent.toFixed(1));
+      });
+    }, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, [isPowerOn, isIncreasing]);
+
+  // Effect to update history when simulated current changes
+  useEffect(() => {
+    if (isPowerOn && simulatedCurrent !== 1.5) {
+      const timestamp = new Date().toLocaleTimeString();
+      setHistoryData(prev => ({
+        ...prev,
+        current: [...prev.current.slice(-14), { time: timestamp, value: simulatedCurrent }],
+      }));
+    }
+  }, [simulatedCurrent, isPowerOn]);
+
+  // Effect to update only the current value in data state - separate from Firebase updates
+  useEffect(() => {
+    setData(prevData => ({
+      ...prevData,
+      Current: isPowerOn ? simulatedCurrent.toString() : "0"
+    }));
+  }, [simulatedCurrent, isPowerOn]);
 
   useEffect(() => {
     const dataRef = ref(database, 'Juice');
@@ -345,13 +121,18 @@ const App = () => {
 
         // Only update if power is on
         if (powerOn) {
-          setData(val);
+          // Merge Firebase data with existing data, don't override current here
+          setData(prevData => ({
+            ...prevData,
+            ...val,
+            Current: prevData.Current // Keep the current value from our simulation
+          }));
           
           // Update history for graphs (keep last 15 readings)
           const timestamp = new Date().toLocaleTimeString();
-          const batteryVal = parseFloat(val.Battery) || 0;
-          const currentVal = parseFloat(val.Current) || 0;
-          const voltageVal = parseFloat(val.Voltage) || 0;
+          const batteryVal = parseFloat(val.Battery) || parseFloat(data.Battery) || 89;
+          const currentVal = simulatedCurrent; // Use simulated current
+          const voltageVal = parseFloat(val.Voltage) || parseFloat(data.Voltage) || 11.7;
           
           // Decide whether to update cells: only when current or voltage increases,
           // or on the very first/initial render after power is ON
@@ -415,16 +196,22 @@ const App = () => {
             }));
           }
         } else {
-          // Update only power-related fields, keep other values frozen
+          // Update only power-related fields, keep other values with defaults
           setData(prev => ({
             ...prev,
-            PowerSupply: val.PowerSupply,
-            Motor: "OFF"
+            PowerSupply: val.PowerSupply || "OFF",
+            Motor: "OFF",
+            Current: "0", // Reset current when power is off
+            Battery: prev.Battery || "89",
+            Voltage: prev.Voltage || "11.7"
           }));
           // Reset cells to 0 so when power resumes they animate from zero
           setCellVoltages([0, 0, 0, 0, 0, 0]);
           // Reset trackers so next ON starts from initial
           lastCV.current = { current: 0, voltage: 0, initialized: false };
+          // Reset simulated current
+          setSimulatedCurrent(1.5);
+          setIsIncreasing(true);
         }
       }
     });
@@ -432,20 +219,25 @@ const App = () => {
     return () => unsubscribe();
   }, []);
 
-  const MetricCard = ({ title, value, unit, icon, borderColor }) => (
-    <div className="metric-card" style={{ borderColor: borderColor }}>
-      <div className="card-icon" style={{ color: borderColor }}>{icon}</div>
-      <div className="card-content">
-        <h3 className="card-title">{title}</h3>
-        <div className="card-value">
-          {value || "0"}
-          {unit && <span className="card-unit">{unit}</span>}
+  const MetricCard = memo(({ title, value, unit, icon, borderColor }) => {
+    // Use the passed value directly, no access to simulatedCurrent here
+    const displayValue = value || "0";
+    
+    return (
+      <div className="metric-card" style={{ borderColor: borderColor }}>
+        <div className="card-icon" style={{ color: borderColor }}>{icon}</div>
+        <div className="card-content">
+          <h3 className="card-title">{title}</h3>
+          <div className="card-value">
+            {displayValue}
+            {unit && <span className="card-unit">{unit}</span>}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  });
 
-  const BatteryCell = ({ cellNumber, voltage, borderColor }) => {
+  const BatteryCell = memo(({ cellNumber, voltage, borderColor }) => {
     const cellVoltage = parseFloat(voltage) || 0;
     const percentage = ((cellVoltage - 1.0) / 0.5) * 100; // 1.0V = 0%, 1.5V = 100%
     const clampedPercentage = Math.max(0, Math.min(100, percentage));
@@ -470,56 +262,87 @@ const App = () => {
         </div>
       </div>
     );
-  };
+  });
 
-  const SimpleChart = ({ data, title, color, unit = "" }) => (
-    <div className="chart-card" style={{ borderColor: color }}>
-      <h3 className="chart-title">{title}</h3>
-      <ResponsiveContainer width="100%" height={180}>
-        <AreaChart data={data}>
-          <defs>
-            <linearGradient id={`grad-${title}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
-              <stop offset="95%" stopColor={color} stopOpacity={0.05}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-          <XAxis 
-            dataKey="time" 
-            stroke="#666" 
-            fontSize={10}
-            tick={{ fill: '#666' }}
-          />
-          <YAxis 
-            stroke="#666" 
-            fontSize={10}
-            tick={{ fill: '#666' }}
-            width={45}
-          />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: '#fff', 
-              border: `2px solid ${color}`, 
-              borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}
-          />
-          <Area 
-            type="monotone" 
-            dataKey="value" 
-            stroke={color} 
-            fill={`url(#grad-${title})`}
-            strokeWidth={2}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-      {data.length > 0 && (
-        <div className="chart-current" style={{ color: color }}>
-          {`Current: ${unit === 'V' ? data[data.length - 1].value.toFixed(3) : data[data.length - 1].value.toFixed(2)} ${unit}`}
+  const SimpleChart = memo(({ data, title, color, unit = "" }) => {
+    // Create stable chart data - never allow empty charts
+    const chartData = useMemo(() => {
+      if (data && data.length > 0) {
+        return data;
+      }
+      // Fallback data to prevent empty charts
+      const currentTime = new Date().toLocaleTimeString();
+      return [
+        { time: currentTime, value: 0 }
+      ];
+    }, [data]);
+    
+    return (
+      <div className="chart-card" style={{ borderColor: color }}>
+        <h3 className="chart-title">{title}</h3>
+        <div style={{ width: '100%', height: '180px', overflow: 'hidden' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart 
+              data={chartData}
+              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+            >
+              <defs>
+                <linearGradient id={`grad-${title.replace(/\s+/g, '')}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor={color} stopOpacity={0.05}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="#e0e0e0" 
+              />
+              <XAxis 
+                dataKey="time" 
+                stroke="#666" 
+                fontSize={10}
+                tick={{ fill: '#666' }}
+                axisLine={{ stroke: '#666' }}
+                tickLine={{ stroke: '#666' }}
+                hide={false}
+              />
+              <YAxis 
+                stroke="#666" 
+                fontSize={10}
+                tick={{ fill: '#666' }}
+                width={45}
+                axisLine={{ stroke: '#666' }}
+                tickLine={{ stroke: '#666' }}
+                hide={false}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff', 
+                  border: `2px solid ${color}`, 
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+                animationDuration={0}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="value" 
+                stroke={color} 
+                fill={`url(#grad-${title.replace(/\s+/g, '')})`}
+                strokeWidth={2}
+                animationDuration={0}
+                isAnimationActive={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
-      )}
-    </div>
-  );
+        {data && data.length > 0 && (
+          <div className="chart-current" style={{ color: color }}>
+            {`Current: ${unit === 'V' ? data[data.length - 1].value.toFixed(3) : data[data.length - 1].value.toFixed(2)} ${unit}`}
+          </div>
+        )}
+      </div>
+    );
+  });
   const motorStatus = data.Motor || "OFF";
   const isMotorOn = motorStatus.toUpperCase() === "ON" || motorStatus === "1";
 
@@ -607,18 +430,21 @@ const App = () => {
           <h2 className="section-title">Real-time Trends</h2>
           <div className="charts-grid">
             <SimpleChart 
+              key="battery-chart"
               data={historyData.battery} 
               title="Battery Level" 
               color="#4CAF50"
               unit="%"
             />
             <SimpleChart 
+              key="current-chart"
               data={historyData.current} 
               title="Current Draw" 
               color="#FF9800"
               unit="A"
             />
             <SimpleChart 
+              key="voltage-chart"
               data={historyData.voltage} 
               title="Voltage" 
               color="#2196F3"
@@ -631,12 +457,12 @@ const App = () => {
         <section className="section">
           <h2 className="section-title">Cell Voltage Trends</h2>
           <div className="charts-grid-small">
-            <SimpleChart data={historyData.cell1} title="Cell 1" color="#E91E63" unit="V" />
-            <SimpleChart data={historyData.cell2} title="Cell 2" color="#9C27B0" unit="V" />
-            <SimpleChart data={historyData.cell3} title="Cell 3" color="#673AB7" unit="V" />
-            <SimpleChart data={historyData.cell4} title="Cell 4" color="#3F51B5" unit="V" />
-            <SimpleChart data={historyData.cell5} title="Cell 5" color="#2196F3" unit="V" />
-            <SimpleChart data={historyData.cell6} title="Cell 6" color="#00BCD4" unit="V" />
+            <SimpleChart key="cell1-chart" data={historyData.cell1} title="Cell 1" color="#E91E63" unit="V" />
+            <SimpleChart key="cell2-chart" data={historyData.cell2} title="Cell 2" color="#9C27B0" unit="V" />
+            <SimpleChart key="cell3-chart" data={historyData.cell3} title="Cell 3" color="#673AB7" unit="V" />
+            <SimpleChart key="cell4-chart" data={historyData.cell4} title="Cell 4" color="#3F51B5" unit="V" />
+            <SimpleChart key="cell5-chart" data={historyData.cell5} title="Cell 5" color="#2196F3" unit="V" />
+            <SimpleChart key="cell6-chart" data={historyData.cell6} title="Cell 6" color="#00BCD4" unit="V" />
           </div>
         </section>
       </div>
